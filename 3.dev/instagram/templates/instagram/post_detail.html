@@ -1,0 +1,10 @@
+<h2>Author: {{ post.author }}</h2>
+
+{% if post.photo %}
+    {% comment %} 가장 뒤에 .url을 붙여야 src의 이미지 링크를 가져올 수 있다. {% endcomment %}
+    <div>
+        <img src="{{ post.photo.url }}">
+    </div>    
+{% endif %}
+
+{{ post.message }}
