@@ -1,14 +1,25 @@
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse, HttpRequest, Http404
 from django.views.generic import ListView, DetailView
+from django.utils.decorators import method_decorator
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic.dates import ArchiveIndexView, YearArchiveView
 
 from .models import Post
 # Create your views here.
 
 
-post_list = ListView.as_view(model=Post)
+# post_list 방법1
+# post_list = login_required(ListView.as_view(model=Post, paginate_by=10))
 
-'''
+# post_list 방법2
+# paginate_by는 한 페이지당 표출되는 포스트의 수를 의미한다.
+# post_list = ListView.as_view(model=Post, paginate_by=10)
+
+"""
+# post_list 방법3
+@login_required
 def post_list(request):
     qs = Post.objects.all()
     # GET이라는 속성중에서 (GET과 get의 의미는 여기서 다름. GET은 호출(request)타입이고 get은 일종의
@@ -25,7 +36,18 @@ def post_list(request):
         'post_list': qs,
         'q': q
     })
-'''
+"""
+
+# post_list 방법4
+
+
+# @method_decorator(login_required, name='dispatch')
+class PostListView(LoginRequiredMixin, ListView):
+    model = Post
+    paginate_by = 10
+
+
+post_list = PostListView.as_view()
 
 """
 def post_detail(request: HttpRequest, pk: int) -> HttpResponse:
@@ -53,13 +75,45 @@ def post_detail(request: HttpRequest, pk: int) -> HttpResponse:
     })
     # return response
 """
+
+"""
 # 위의 post_detail을 이 한줄코드로 표현한다;
-post_detail = DetailView.as_view(model=Post)
+post_detail = DetailView.as_view(
+    # queryset가장 마지막 인자에 들어간 is_public=True의 의미는
+    # 공개된 포스팅에 대해서 포스트 디테일(이 변수 이름)을 적용해주겠다는 의미다.
+    model=Post, queryset=Post.objects.filter(is_public=True))
+"""
+
+# 다시 위의 post_detail을 이것으로 표현한다.
+
+
+class PostDetailView(DetailView):
+    model = Post
+    # queryset = Post.objects.filter(is_public=True)
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        # "로그인이 되어있지 않다면"이라는 뜻이다. not때문에
+        # authenticated는 "인증"이라는 뜻이다.
+        if not self.request.user.is_authenticated:
+            # 공개된 것만 봐라
+            qs = qs.filter(is_public=True)
+
+        # 즉 위에서 말하고자 한 것을 총체적으로 말하자면
+        # 로그인 되어있지 않다면 공개된 것만 봐라. 라는 의미다.
+        return qs
+
+
+post_detail = PostDetailView.as_view()
+
 
 # request이후에 오는 year같은것들은 하나의 카테고리인데도
 # 딱 하나만 사용하는게 아니라 변동이 있는경우에는 request외의 인자로도 받아서
 # 어떤 값으로 사용한다. 출력을 위한 재료이거나 아니면 그 자체로 출력이 되든가.
+# def archives_year(request, year):
+#     return HttpResponse(f"{year}년 archives")
 
+post_archive = ArchiveIndexView.as_view(model=Post, date_field='created_at')
 
-def archives_year(request, year):
-    return HttpResponse(f"{year}년 archives")
+post_archive_year = YearArchiveView.as_view(
+    model=Post, date_field='created_at')

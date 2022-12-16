@@ -1,3 +1,4 @@
+from django.urls import reverse
 from django.db import models
 # 이 방법은 권장되는 방법이 아니다. 왜냐하면 User라는게 바뀔수도 있는데 이게
 # 뭔가 자동동기화 되는 방식은 아닌듯 하다.
@@ -41,6 +42,9 @@ class Post(models.Model):
     # def message_length(self):
     #     return len(self.message)
     # message_length.short_description = 'message number of characters'
+
+    def get_absolute_url(self):
+        return reverse('instagram:post_detail', args=[self.pk])
 
     # 자주 쓰이는 모델이라면 모델단에 구현하는게 맞다
 

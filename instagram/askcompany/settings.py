@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     # third apps
     'django_extensions',
     'debug_toolbar',
+    'bootstrap4',
 
     # local apps
     'blog1',
@@ -68,6 +69,10 @@ TEMPLATES = [
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
             # File System Template Loader
+            # 만약 templates의 경로를 앱/templates/으로 만들어주고 싶다면
+            # os.path.join(BASE_DIR, 'app_name', 'templates')
+            # 이렇게 해주면 된다.
+            os.path.join(BASE_DIR, 'templates')
         ],
         'APP_DIRS': True,
         'OPTIONS': {

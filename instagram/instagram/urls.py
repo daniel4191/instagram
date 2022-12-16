@@ -1,32 +1,22 @@
 from django.urls import path, re_path, register_converter
 
+from .converters import YearConverter, MonthConverter, DayConverter
 from . import views
 
 
 # Url reverse에서 names
 app_name = 'instagram'
 
-# 이건 정규표현식을 계속 쓰는 번거로움을 제거하기 위한 클래스다.
-
-
-class YearConverter:
-    regex = r"20\d{2}"
-
-    def to_python(self, value):
-        return int(value)
-
-    def to_url(self, value):
-        # return "%04d" % value
-        return str(value)
-
 
 # 이거 자체가 일종의 path의 보조적 역할을 하는 것 같다.
 register_converter(YearConverter, 'year')
+register_converter(MonthConverter, 'month')
+register_converter(DayConverter, 'day')
 
 urlpatterns = [
     path('', views.post_list, name='post_list'),
     # path('<str:pk>/', views.post_detail_2),
-    path('<int:pk>/', views.post_detail),
+    path('<int:pk>/', views.post_detail, name='post_detail'),
     # year나 위의 pk처럼 단 하나의 값으로 지정되지 않았을 경우에는 그 입력하게될 타입에 따라서
     # int나 str등을 부여하게되고 이는 다시 views에서 request 바로 다음으로 이어받는 인자로 사용하게 된다.
     # path('archives/<int:year>/', views.archives_year)
@@ -39,5 +29,11 @@ urlpatterns = [
     # re_path(r'archives/(?P<year>\d{4})/', views.archives_year)
 
     # YearConverter class와 register_converter를 정의 한 후에 사용해주는 path
-    path('archives/<year:year>/', views.archives_year)
+    # path('archives/<year:year>/', views.archives_year)
+    path('archive/', views.post_archive, name='post_archive'),
+    path('archive/<year:year>/', views.post_archive_year, name='post_archive_year')
+    # path('archive/<year:year>/<month:month>/',
+    #      views.post_archive_month, name='post_archive_month')
+    # path('archive/<year:year>/<month:month>/<day:day>/',
+    #      views.post_archive_day, name='post_archive_day')
 ]

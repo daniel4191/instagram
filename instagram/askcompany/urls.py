@@ -19,7 +19,7 @@ from django.urls import path, include
 # from askcompany import settings를 합쳐준 개념이 아래에 있는 import이다.
 from django.conf import settings
 from django.conf.urls.static import static
-from django.views.generic import TemplateView
+from django.views.generic import TemplateView, RedirectView
 
 class RootView(TemplateView):
     template_name = 'root.html'
@@ -27,7 +27,15 @@ class RootView(TemplateView):
 urlpatterns = [
     # path('', TemplateView.as_view(template_name='root.html'), name='root'),
     # 위의 RootView와 함께 쓸때
-    path('', RootView.as_view(), name='root'),
+    # path('', RootView.as_view(), name='root'),
+    # 이렇게 RedirectView를 해주게 되면 ''과 같이 지정된 페이지로 이동했을때 as_view안의 인자로
+    # 들어있는 url이 붙어서 이동되게 된다.
+    path('', RedirectView.as_view(
+        # /url='/instagram/'
+        # reverse url 사용
+        # instagram urls에 들어있는 인자중 name이 post_list로 지정된 것을 찾아서 거기로 이동한다..
+        pattern_name = 'instagram:post_list'
+        ), name='root'),
     path('admin/', admin.site.urls),
     path('blog1/', include('blog1.urls')),
     path('instagram/', include('instagram.urls')),
